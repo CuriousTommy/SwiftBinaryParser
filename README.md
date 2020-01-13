@@ -35,7 +35,7 @@ myIndexedData.index = 32
 
 ## How does it work
 
-It takes advantage of Apple's [Mirror class](https://developer.apple.com/documentation/swift/mirror). It iterates through all of the properties in the class. `readBinary` or `writeBinary` will be called, if the item conforms to the `ParserCommon` protocol.
+It takes advantage of Apple's [Mirror class](https://developer.apple.com/documentation/swift/mirror). It iterates through all of the properties in the class. `readBinary` or `writeBinary` will be called if the item conforms to the `ParserCommon` protocol.
 
 ## Future Plans
 
