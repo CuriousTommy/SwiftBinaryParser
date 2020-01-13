@@ -7,65 +7,54 @@
 import Foundation
 
 public class ParserGeneric<T>: ParserCommon {
-    public var identifier: String
     public var value: T
     public var size: Int { MemoryLayout<T>.stride }
 
-    public init(_ identifier: String, _ value: T) {
-        self.identifier = identifier
+    public init(_ value: T) {
         self.value = value
     }
 
-    public func readData(fromFile file: IndexedData) {
+    public func readBinary(fromData file: IndexedData) {
         file.read(value: &self.value)
     }
 
-    public func writeData(toFile file: IndexedData) {
+    public func writeBinary(toData file: IndexedData) {
         file.write(value: self.value)
     }
 }
 
-public class ParseStruct : ParserCommon {
-    private let orderedElements: [ParserCommon]
-    public let elements: [String: ParserCommon]
-    public var identifier: String
+open class ParseStruct : ParserCommon {
     public var size: Int {
-        orderedElements.reduce(0) { (totalSize, item) -> Int in
-            totalSize + item.size
+        Mirror(reflecting: self).children.reduce(0) { (result, arg1) -> Int in
+            
+            if let value = arg1.value as? ParserCommon {
+                return result + value.size
+            }
+            
+            return result
         }
     }
     
-    public init(_ identifier: String, _ elements: ParserCommon...) {
-        var mutableElements: [String: ParserCommon] = [:]
-        var mutableOrderedElements: [ParserCommon] = []
-        for element in elements {
-            mutableElements[element.identifier] = element
-            mutableOrderedElements.append(element)
-        }
+    public init() {
         
-        self.identifier = identifier
-        self.elements = mutableElements
-        self.orderedElements = mutableOrderedElements
     }
     
-    public func readData(fromFile data: IndexedData) {
-        for currentItem in orderedElements {
-            currentItem.readData(fromFile: data)
+    private func mirrorLoop(function: (Any) -> Void) {
+        for (_,value) in Mirror(reflecting: self).children {
+            function(value)
         }
     }
     
-    public func writeData(toFile data: IndexedData) {
-        for currentItem in orderedElements {
-            currentItem.writeData(toFile: data)
+    public func readBinary(fromData data: IndexedData) {
+        mirrorLoop {
+            ($0 as? ParserCommon)?.readBinary(fromData: data)
         }
     }
     
-    public subscript(elementString: String) -> ParserCommon? {
-        elements[elementString]
-    }
-    
-    public subscript<T: RawRepresentable>(enumElement: T) -> ParserCommon? {
-        elements[enumElement.rawValue as! String]
+    public func writeBinary(toData data: IndexedData) {
+        mirrorLoop {
+            ($0 as? ParserCommon)?.writeBinary(toData: data)
+        }
     }
 }
 
@@ -74,14 +63,14 @@ public class ParseStruct : ParserCommon {
 //
 
 public class ParseInt<T: BinaryInteger>: ParserGeneric<T> {
-    public convenience init(_ identifier: String) {
-        self.init(identifier, 0)
+    public convenience init() {
+        self.init(0)
     }
 }
 
 public class ParseFloat<T: BinaryFloatingPoint>: ParserGeneric<T> {
-    public convenience init(_ identifier: String) {
-        self.init(identifier, 0.0)
+    public convenience init() {
+        self.init(0.0)
     }
 }
 
@@ -93,23 +82,23 @@ public class ParseStaticStringUTF8: ParserGeneric<String> {
         }
     }
     
-    public init(_ identifier: String, _ value: String, size: Int) {
+    public init(_ value: String, size: Int) {
         self.internalSize = size
-        super.init(identifier, value)
+        super.init(value)
     }
     
-    public convenience init(_ identifier: String, size: Int) {
-        self.init(identifier, "", size: size)
+    public convenience init(size: Int) {
+        self.init("", size: size)
     }
     
-    public override func readData(fromFile data: IndexedData) {
+    public override func readBinary(fromData data: IndexedData) {
         data.readString(
             value: &self.value,
             count: self.size
         )
     }
     
-    public override func writeData(toFile data: IndexedData) {
+    public override func writeBinary(toData data: IndexedData) {
         data.writeString(
             value: self.value,
             count: self.size

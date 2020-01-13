@@ -5,18 +5,14 @@
 
 import Foundation
 
-public protocol ParseIdentifier {
-    var identifier: String { get set }
-}
-
 public protocol ParseProtocol {
-    func readData(fromFile: IndexedData)
-    func writeData(toFile: IndexedData)
+    func readBinary(fromData: IndexedData)
+    func writeBinary(toData: IndexedData)
 }
 
 public protocol ParseSize {
     var size: Int { get }
 }
 
-public protocol ParserCommon: ParseIdentifier, ParseProtocol, ParseSize {
+public protocol ParserCommon: ParseProtocol, ParseSize {
 }
