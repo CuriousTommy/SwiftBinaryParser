@@ -1,3 +1,3 @@
 # BinaryReader
 
-A description of this package.
+A WIP Binary Extractor

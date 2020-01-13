@@ -4,12 +4,15 @@
 import PackageDescription
 
 let package = Package(
-    name: "BinaryReader",
+    name: "BinaryParser",
+    platforms: [
+        .macOS(.v10_15)
+    ],
     products: [
         // Products define the executables and libraries produced by a package, and make them visible to other packages.
         .library(
-            name: "BinaryReader",
-            targets: ["BinaryReader"]),
+            name: "BinaryParser",
+            targets: ["BinaryParser"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -19,10 +22,10 @@ let package = Package(
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
         // Targets can depend on other targets in this package, and on products in packages which this package depends on.
         .target(
-            name: "BinaryReader",
+            name: "BinaryParser",
             dependencies: []),
         .testTarget(
-            name: "BinaryReaderTests",
-            dependencies: ["BinaryReader"]),
+            name: "BinaryParserTests",
+            dependencies: ["BinaryParser"]),
     ]
 )
