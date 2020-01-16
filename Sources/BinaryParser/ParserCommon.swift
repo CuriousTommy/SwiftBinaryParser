@@ -59,3 +59,21 @@ open class ParseStruct : ParserCommon {
         }
     }
 }
+
+public func getArrayFromNode<T: ParserCommon>(_ data: IndexedData, count: Int, initalizer: () -> T) -> [T] {
+    var newArray: [T] = []
+    
+    for _ in 0..<count {
+        let newItem: T = initalizer()
+        newItem.readBinary(fromData: data)
+        newArray.append(newItem)
+    }
+    
+    return newArray
+}
+
+public func setNodeFromArray<T: ParserCommon>(_ data: IndexedData, array: [T]) {
+    for item in array {
+        item.writeBinary(toData: data)
+    }
+}
