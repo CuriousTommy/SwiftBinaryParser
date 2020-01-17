@@ -33,6 +33,26 @@ You can change the current index by using the `index` property.
 myIndexedData.index = 32
 ```
 
+How to generate an array from a contiguous group of nodes
+```
+class Node: ParseStruct {
+    var rating = ParseFloat<Float32>()
+    var age = ParseInt<UInt8>()
+}
+
+var nodes: [Node] = []
+var count: UInt8 = 8
+
+// Generate an array from a group of node
+nodes = getArrayFromNode(indexedData, count: Int(count)) {
+    // Closure that initalizes the element
+    Node()
+}
+
+// Save the array as a group of nodes
+setNodeFromArray(indexedData, array: nodes)
+```
+
 ## How does it work
 
 It takes advantage of Apple's [Mirror class](https://developer.apple.com/documentation/swift/mirror). It iterates through all of the properties in the class. `readBinary` or `writeBinary` will be called if the item conforms to the `ParserCommon` protocol.
@@ -40,5 +60,5 @@ It takes advantage of Apple's [Mirror class](https://developer.apple.com/documen
 ## Future Plans
 
 * Big Endian Support
-* Function/method that extracts nodes to/from an array.
 * More helper classes
+* Safety Checking
