@@ -64,11 +64,11 @@ class BinaryParserTest: XCTestCase {
 }
 
 
-class TestArrayHeader: ParseStruct {
+class TestArrayHeader: ParseClass {
     var count = ParseInt<UInt32>()
 }
 
-class TestArrayNode: ParseStruct {
+class TestArrayNode: ParseClass {
     var rating = ParseFloat<Float32>()
     var age = ParseInt<UInt8>()
 }
@@ -80,7 +80,7 @@ extension TestArrayNode: Equatable {
     }
 }
 
-class TestReadWriteStruct: ParseStruct, Equatable {
+class TestReadWriteStruct: ParseClass, Equatable {
     static func == (lhs: TestReadWriteStruct, rhs: TestReadWriteStruct) -> Bool {
         (lhs.magic.value == rhs.magic.value) &&
         (lhs.header.value == rhs.header.value) &&

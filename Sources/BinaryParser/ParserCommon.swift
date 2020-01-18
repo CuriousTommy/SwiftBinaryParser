@@ -25,7 +25,7 @@ public class ParserGeneric<T>: ParserCommon {
 }
 
 
-open class ParseStruct : ParserCommon {
+open class ParseClass : ParserCommon {
     public var size: Int {
         Mirror(reflecting: self).children.reduce(0) { (result, arg1) -> Int in
             

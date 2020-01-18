@@ -4,9 +4,9 @@ A WIP Binary Extractor for swift.
 
 ## How To Use
 
-You create the class that represents the structure of the data you want to parse. Make sure you inherit from ParseStruct
+You create the class that represents the structure of the data you want to parse. Make sure you inherit from ParseClass
 ```
-class TemplateStruct: ParseStruct {
+class TemplateStruct: ParseClass {
     var magic = ParseStaticStringUTF8(size: 4)
     var header = ParseInt<UInt8>()
     var age = ParseInt<UInt8>()
@@ -35,7 +35,7 @@ myIndexedData.index = 32
 
 How to generate an array from a contiguous group of nodes
 ```
-class Node: ParseStruct {
+class Node: ParseClass {
     var rating = ParseFloat<Float32>()
     var age = ParseInt<UInt8>()
 }
