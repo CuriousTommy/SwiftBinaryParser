@@ -18,6 +18,25 @@ class BinaryParserTest: XCTestCase {
         XCTAssert(baseClass == writeClass, "The classes do not match")
     }
     
+    func testCompareParserWithRawValue() {
+        let array: [UInt8] = [
+            0x54, 0x45, 0x53, 0x54,
+            10,
+            20,
+            0xCD, 0xCC, 0xBC, 0x40
+        ]
+        
+        
+        let myIndexedData = IndexedData(data: Data())
+        let baseClass = TestReadWriteStruct()
+        baseClass.magic = ParseStaticStringUTF8("TEST", size: 4)
+        baseClass.header = ParseInt<UInt8>(10)
+        baseClass.age = ParseInt<UInt8>(20)
+        baseClass.height = ParseFloat<Float32>(5.9)
+        baseClass.writeBinary(toData: myIndexedData)
+        
+        XCTAssert(Data(array) == myIndexedData.data, "The data does not match the raw value")
+    }
     
     func testArray() {
         let indexedData = IndexedData(data: Data())
