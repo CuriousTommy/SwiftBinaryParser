@@ -29,8 +29,68 @@ public class IndexedData {
         return self.index..<self.index+stride
     }
     
+    func isRangeWithInBoundsForRead(_ range: Range<Data.Index>) -> Bool {
+        return (range.upperBound <= data.count && range.upperBound >= 0) &&
+        (range.lowerBound <= data.count && range.lowerBound >= 0)
+    }
     
     
+    public func read<T>(value: inout T){
+        let stride = MemoryLayout<T>.stride
+        let range = getRange(stride)
+
+        readWithinSubrange(range, forValue: &value)
+        self.index += stride
+    }
+    
+    public func readUInt8Array(value: inout [UInt8], count customCount: Int? = nil) {
+        let count = customCount ?? value.count
+        
+        let range = getRange(count)
+        readArrayWithinSubrange(range, forValue: &value, withSize: count)
+        self.index += count
+    }
+    
+    public func readString(value: inout String, count: Int?) {
+        var stringArray: [UInt8] = Array(repeating: 0, count: count ?? value.count)
+        
+        self.readUInt8Array(value: &stringArray, count: count)
+        
+        if let newValue = String(bytes: stringArray, encoding: .utf8) {
+            value = newValue
+        }
+    }
+    
+    
+    public func write<T>(value: T){
+        let stride = MemoryLayout<T>.stride
+        let range = getRange(stride)
+
+        self.writeWithinSubrange(range, forValue: value, withSize: stride)
+        self.index += stride
+    }
+    
+    public func writeUInt8Array(value: [UInt8], count customCount: Int? = nil) {
+        let count = customCount ?? value.count
+        
+        let range = getRange(count)
+        self.writeArrayWithinSubrange(range, forValue: value, withSize: count)
+        self.index += count
+    }
+    
+    public func writeString(value: String, count: Int?) {
+        self.writeUInt8Array(
+            value: Array(value.utf8),
+            count: count
+        )
+    }
+}
+
+
+
+
+// Internal Binary Managment Function
+extension IndexedData {
     func writeWithinSubrange<T>(_ subrange: Range<Data.Index>, forValue value: T, withSize size: Int) {
         var tempData = Data()
         
@@ -89,49 +149,5 @@ public class IndexedData {
             print("TODO: Add support for exceptions")
             return
         }
-    }
-    
-    func isRangeWithInBoundsForRead(_ range: Range<Data.Index>) -> Bool {
-        return (range.upperBound <= data.count && range.upperBound >= 0) &&
-        (range.lowerBound <= data.count && range.lowerBound >= 0)
-    }
-    
-    
-    
-    public func read<T>(value: inout T){
-        let stride = MemoryLayout<T>.stride
-        let range = getRange(stride)
-
-        readWithinSubrange(range, forValue: &value)
-        self.index += stride
-    }
-    
-    public func readString(value: inout String, count: Int) {
-        let range = getRange(count)
-        var stringArray: [UInt8] = Array(repeating: 0, count: count)
-        
-        readArrayWithinSubrange(range, forValue: &stringArray, withSize: count)
-        
-        if let newValue = String(bytes: stringArray, encoding: .utf8) {
-            value = newValue
-        }
-        self.index += count
-    }
-
-    public func write<T>(value: T){
-        let stride = MemoryLayout<T>.stride
-        let range = getRange(stride)
-
-        self.writeWithinSubrange(range, forValue: value, withSize: stride)
-        self.index += stride
-    }
-    
-    public func writeString(value: String, count: Int) {
-        let range = getRange(count)
-        let stringArray: [UInt8] = Array(value.utf8)
-        
-        self.writeArrayWithinSubrange(range, forValue: stringArray, withSize: count)
-        
-        self.index += count
     }
 }
