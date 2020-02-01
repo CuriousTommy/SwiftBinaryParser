@@ -14,5 +14,13 @@ public protocol ParseSize {
     var size: Int { get }
 }
 
-public protocol ParserCommon: ParseProtocol, ParseSize {
+public protocol ParseValue {
+    associatedtype Value
+    var value: Value { get }
+}
+
+public protocol ParserCommonProtocol: ParseProtocol, ParseSize {
+}
+
+public protocol ParserGenericProtocol: ParserCommonProtocol, ParseValue {
 }

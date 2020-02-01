@@ -7,7 +7,7 @@
 import Foundation
 
 
-public class ParserGeneric<T>: ParserCommon {
+public class ParserMutableGeneric<T>: ParserGenericProtocol {    
     public var value: T
     public var size: Int { MemoryLayout<T>.stride }
 
@@ -25,11 +25,11 @@ public class ParserGeneric<T>: ParserCommon {
 }
 
 
-open class ParseClass : ParserCommon {
+open class ParseClass : ParserCommonProtocol {
     public var size: Int {
         Mirror(reflecting: self).children.reduce(0) { (result, arg1) -> Int in
             
-            if let value = arg1.value as? ParserCommon {
+            if let value = arg1.value as? ParserCommonProtocol {
                 return result + value.size
             }
             
@@ -49,18 +49,18 @@ open class ParseClass : ParserCommon {
     
     public func readBinary(fromData data: IndexedData) {
         mirrorLoop {
-            ($0 as? ParserCommon)?.readBinary(fromData: data)
+            ($0 as? ParserCommonProtocol)?.readBinary(fromData: data)
         }
     }
     
     public func writeBinary(toData data: IndexedData) {
         mirrorLoop {
-            ($0 as? ParserCommon)?.writeBinary(toData: data)
+            ($0 as? ParserCommonProtocol)?.writeBinary(toData: data)
         }
     }
 }
 
-public func getArrayFromNode<T: ParserCommon>(_ data: IndexedData, count: Int, initalizer: () -> T) -> [T] {
+public func getArrayFromNode<T: ParserCommonProtocol>(_ data: IndexedData, count: Int, initalizer: () -> T) -> [T] {
     var newArray: [T] = []
     
     for _ in 0..<count {
@@ -72,7 +72,7 @@ public func getArrayFromNode<T: ParserCommon>(_ data: IndexedData, count: Int, i
     return newArray
 }
 
-public func setNodeFromArray<T: ParserCommon>(_ data: IndexedData, array: [T]) {
+public func setNodeFromArray<T: ParserCommonProtocol>(_ data: IndexedData, array: [T]) {
     for item in array {
         item.writeBinary(toData: data)
     }
