@@ -7,7 +7,7 @@ class BinaryParserTest: XCTestCase {
         let baseClass = TestReadWriteStruct()
         baseClass.magic = ParseStaticStringUTF8("TEST", size: 4)
         baseClass.header = ParseInt<UInt8>(10)
-        baseClass.endian = ParseByteOrder(.UTF16(.big))
+        baseClass.endian = ParseByteOrder(.UTF16, endian: .big)
         baseClass.age = ParseInt<UInt8>(20)
         baseClass.height = ParseFloat<Float32>(5.9)
         baseClass.writeBinary(toData: myIndexedData)
@@ -33,7 +33,7 @@ class BinaryParserTest: XCTestCase {
         let baseClass = TestReadWriteStruct()
         baseClass.magic = ParseStaticStringUTF8("TEST", size: 4)
         baseClass.header = ParseInt<UInt8>(10)
-        baseClass.endian = ParseByteOrder(.UTF16(.little))
+        baseClass.endian = ParseByteOrder(.UTF16, endian: .little)
         baseClass.age = ParseInt<UInt8>(20)
         baseClass.height = ParseFloat<Float32>(5.9)
         baseClass.writeBinary(toData: myIndexedData)
@@ -106,14 +106,15 @@ class TestReadWriteStruct: ParseClass, Equatable {
     static func == (lhs: TestReadWriteStruct, rhs: TestReadWriteStruct) -> Bool {
         (lhs.magic.value == rhs.magic.value) &&
         (lhs.header.value == rhs.header.value) &&
-        (lhs.endian.value == rhs.endian.value) &&
+        (lhs.endian.utf == rhs.endian.utf) &&
+        (lhs.endian.endian == rhs.endian.endian) &&
         (lhs.age.value == rhs.age.value) &&
         (lhs.height.value == rhs.height.value)
     }
                 
     var magic = ParseStaticStringUTF8(size: 4)
     var header = ParseInt<UInt8>()
-    var endian = ParseByteOrder(.UTF16(.little))
+    var endian = ParseByteOrder(.UTF16, endian: .little)
     var age = ParseInt<UInt8>()
     var height = ParseFloat<Float32>()
 }

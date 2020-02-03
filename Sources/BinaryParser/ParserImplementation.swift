@@ -49,117 +49,99 @@ public class ParseStaticStringUTF8: ParserMutableGeneric<String> {
     }
 }
 
-public class ParseByteOrder: ParserMutableGeneric<ParseByteOrder.UTF> {
-    override public var size: Int {
-        switch value {
-            case .UTF16(_):
+public class ParseByteOrder: ParserCommonProtocol {
+    public enum UTF: Equatable {
+        case UTF16
+        case UTF32
+    }
+    
+    public enum Endian {
+        case big
+        case little
+    }
+    
+    public var size: Int {
+        switch utf {
+            case .UTF16:
                 return 2
-            case .UTF32(_):
+            case .UTF32:
                 return 4
         }
     }
     
-    public enum UTF: Equatable {
-        public static func ==(lhs: UTF, rhs: UTF) -> Bool {
-            switch lhs {
-                case .UTF16(let left):
-                    switch rhs {
-                        case .UTF16(let right):
-                            return left == right
-                        default:
-                            return false
-                    }
-                
-                case .UTF32(let left):
-                    switch rhs {
-                        case .UTF32(let right):
-                            return left == right
-                        default:
-                            return false
-                    }
-                
-            }
-        }
-        
-        public enum Endian {
-            case big
-            case little
-        }
-        
-        case UTF16(Endian?)
-        case UTF32(Endian?)
+    public let utf: UTF
+    public var endian: Endian?
+    
+    public init(_ utf: ParseByteOrder.UTF, endian: ParseByteOrder.Endian? = nil) {
+        self.utf = utf
+        self.endian = endian
     }
     
     
-    override public init(_ value: ParseByteOrder.UTF) {
-        super.init(value)
-    }
-    
-    
-    override public func readBinary(fromData: IndexedData) {
-        let switchEndian: ([UInt8], [UInt8], [UInt8]) -> UTF.Endian? = {current,big,little in
+    public func readBinary(fromData: IndexedData) {
+        let switchEndian: ([UInt8], [UInt8], [UInt8]) -> Void = {current,big,little in
             if current == big {
-                return .big
+                self.endian = .big
             } else if current == little {
-                return .little
+                self.endian = .little
             } else {
-                return .none
+                self.endian = .none
             }
         }
         
-        let switchUTF: (UTF,[UInt8]) -> UTF = { utf,current in
-            switch utf {
-                case .UTF16(_):
-                    return .UTF16(switchEndian(
-                        current,
-                        [0xFE, 0xFF],
-                        [0xFF, 0xFE]
-                    ))
-                case .UTF32(_):
-                    return .UTF32(switchEndian(
-                        current,
-                        [0x00, 0x00, 0xFE, 0xFF],
-                        [0xFF, 0xFE, 0x00, 0x00]
-                    ))
+        let switchUTF: ([UInt8]) -> Void = { current in
+            let big: [UInt8]
+            let little: [UInt8]
+            
+            switch self.utf {
+                case .UTF16:
+                    big = [0xFE, 0xFF]
+                    little = [0xFF, 0xFE]
+                    break;
+                case .UTF32:
+                    big = [0x00, 0x00, 0xFE, 0xFF]
+                    little = [0xFF, 0xFE, 0x00, 0x00]
+                    break;
             }
+            
+            switchEndian(current,big,little)
         }
 
-        var test: [UInt8] = Array(repeating: 0, count: size)
-        fromData.readUInt8Array(value: &test)
-        self.value = switchUTF(value, test)
+        var rawValue: [UInt8] = Array(repeating: 0, count: size)
+        fromData.readUInt8Array(value: &rawValue)
+        switchUTF(rawValue)
     }
     
     
-    override public func writeBinary(toData: IndexedData) {
-        let switchEndian: (UTF.Endian?, [UInt8], [UInt8]) -> [UInt8]? = {endian,big,little in
-            switch endian {
-            case .big:
-                return big
-            case .little:
-                return little
-            case .none:
-                return nil
+    public func writeBinary(toData: IndexedData) {
+        let switchEndian: ([UInt8], [UInt8]) -> [UInt8]? = {big,little in
+            switch self.endian {
+                case .big:
+                    return big
+                case .little:
+                    return little
+                case .none:
+                    return nil
             }
         }
         
-        let switchUTF: (UTF) -> [UInt8]? = {utf in
-            switch utf {
-                case .UTF16(let endian):
-                    return switchEndian(
-                        endian,
-                        [0xFE, 0xFF],
-                        [0xFF, 0xFE]
-                    )
-                case .UTF32(let endian):
-                    return switchEndian(
-                        endian,
-                        [0x00, 0x00, 0xFE, 0xFF],
-                        [0xFF, 0xFE, 0x00, 0x00]
-                    )
+        let switchUTF: () -> [UInt8]? = {
+            let big: [UInt8]
+            let little: [UInt8]
+            
+            switch self.utf {
+                case .UTF16:
+                    big = [0xFE, 0xFF]
+                    little = [0xFF, 0xFE]
+                case .UTF32:
+                    big = [0x00, 0x00, 0xFE, 0xFF]
+                    little = [0xFF, 0xFE, 0x00, 0x00]
             }
+            
+            return switchEndian(big,little)
         }
         
-        if let rawValue: [UInt8] = switchUTF(self.value) {
+        if let rawValue: [UInt8] = switchUTF() {
             toData.writeUInt8Array(value: rawValue)
         }
     }
