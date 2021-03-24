@@ -5,7 +5,7 @@ A WIP Binary Extractor for swift.
 ## How To Use
 
 You create the class that represents the structure of the data you want to parse. Make sure you inherit from ParseClass
-```
+```swift
 class TemplateStruct: ParseClass {
     var magic = ParseStaticStringUTF8(size: 4)
     var header = ParseInt<UInt8>()
@@ -15,7 +15,7 @@ class TemplateStruct: ParseClass {
 ```
 
 How to read/write data.
-```
+``` swift
 // The data object will be put in the helper object,
 // IndexedData, will keeps track of the current index.
 let myIndexedData = IndexedData(data: <Insert Data Object>)
@@ -29,12 +29,12 @@ baseClass.writeBinary(toData: myIndexedData)
 ```
 
 You can change the current index by using the `index` property.
-```
+``` swift
 myIndexedData.index = 32
 ```
 
 How to generate an array from a contiguous group of nodes
-```
+``` swift
 class Node: ParseClass {
     var rating = ParseFloat<Float32>()
     var age = ParseInt<UInt8>()
